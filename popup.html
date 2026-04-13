@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pwnu - Reconnaissance</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #21262d;
+      --text-primary: #c9d1d9;
+      --text-secondary: #8b949e;
+      --accent: #58a6ff;
+      --success: #3fb950;
+      --warning: #d29922;
+      --error: #f85149;
+      --border: #30363d;
+    }
+
+    body {
+      width: 480px;
+      min-height: 400px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    .header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, var(--accent), #a371f7);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .logo-text {
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px 16px;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content {
+      display: none;
+      padding: 16px;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    .input-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
+    }
+
+    .input-field::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #4c9aed;
+    }
+
+    .btn-primary:disabled {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .file-upload {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .file-upload input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-upload-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      background: var(--bg-tertiary);
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .file-upload:hover .file-upload-label {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .results-list {
+      max-height: 250px;
+      overflow-y: auto;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    .results-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .results-item:last-child {
+      border-bottom: none;
+    }
+
+    .results-domain {
+      flex: 1;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .results-badge {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+      margin-left: 8px;
+    }
+
+    .badge-success {
+      background: rgba(63, 185, 80, 0.15);
+      color: var(--success);
+    }
+
+    .badge-warning {
+      background: rgba(210, 153, 34, 0.15);
+      color: var(--warning);
+    }
+
+    .badge-info {
+      background: rgba(88, 166, 255, 0.15);
+      color: var(--accent);
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #a371f7);
+      transition: width 0.3s;
+    }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .info-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .info-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-row {
+      display: flex;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-key {
+      width: 100px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .info-value {
+      flex: 1;
+      font-family: 'SF Mono', Monaco, monospace;
+      word-break: break-all;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .empty-text {
+      font-size: 13px;
+    }
+
+    .wordlist-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .wordlist-count {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .actions-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .actions-bar .btn {
+      flex: 1;
+    }
+
+    .extracted-info {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .extracted-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .extracted-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .extracted-tag {
+      padding: 4px 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: 'SF Mono', Monaco, monospace;
+    }
+
+    .badge-ctf {
+      background: rgba(163, 113, 247, 0.15);
+      color: #a371f7;
+    }
+
+    .badge-pentest {
+      background: rgba(63, 185, 80, 0.15);
+      color: var(--success);
+    }
+
+    .badge-bounty {
+      background: rgba(210, 153, 34, 0.15);
+      color: var(--warning);
+    }
+
+    .score-excellent { color: var(--success); }
+    .score-medium { color: var(--warning); }
+    .score-poor { color: var(--error); }
+
+    .info-section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .category-icon {
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">p</div>
+      <span class="logo-text">pwnu</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="subdomains">Subdomains</button>
+    <button class="tab" data-tab="info">Info</button>
+    <button class="tab" data-tab="wordlist">Wordlist</button>
+  </div>
+
+  <div id="subdomains" class="tab-content active">
+    <div class="input-group">
+      <label class="input-label">Target Domain</label>
+      <input type="text" id="domainInput" class="input-field" placeholder="example.com">
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Wordlist Source</label>
+      <div class="actions-bar">
+        <button class="btn btn-secondary" id="useDefaultBtn">Default</button>
+        <button class="btn btn-secondary" id="uploadBtn">Upload</button>
+        <button class="btn btn-secondary" id="generateBtn">Generate</button>
+      </div>
+      <div class="file-upload" id="fileUpload" style="display: none;">
+        <input type="file" id="wordlistFile" accept=".txt,.lst">
+        <div class="file-upload-label">Click or drag file to upload</div>
+      </div>
+      <div id="wordlistSource" style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);"></div>
+    </div>
+
+    <button class="btn btn-primary" id="startScanBtn" style="width: 100%;">
+      Start Scan
+    </button>
+
+    <div id="scanProgress" style="display: none;">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text">
+        <span id="progressText">0 / 0</span>
+        <span id="foundCount">Found: 0</span>
+      </div>
+    </div>
+
+    <div id="subdomainResults" class="results-list" style="margin-top: 16px;"></div>
+  </div>
+
+  <div id="info" class="tab-content">
+    <div class="input-group">
+      <label class="input-label">Target Domain</label>
+      <input type="text" id="infoDomainInput" class="input-field" placeholder="example.com">
+    </div>
+    <button class="btn btn-primary" id="gatherInfoBtn" style="width: 100%;">Gather Info</button>
+
+    <div id="infoLoading" class="loading" style="display: none;">
+      <div class="spinner"></div>
+    </div>
+
+    <div id="infoResults">
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-text">Enter a domain to gather information</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="wordlist" class="tab-content">
+    <div class="input-group">
+      <label class="input-label">Extract from Current Page</label>
+      <button class="btn btn-primary" id="extractPageBtn" style="width: 100%;">
+        Extract from DOM
+      </button>
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="enableMutations" checked>
+      <label for="enableMutations">Enable mutations (prefixes/suffixes)</label>
+    </div>
+
+    <div id="extractedContent" class="extracted-info" style="display: none;">
+      <div class="extracted-title">Extracted Words</div>
+      <div class="extracted-list" id="extractedList"></div>
+    </div>
+
+    <div class="input-group" style="margin-top: 16px;">
+      <label class="input-label">Generated Wordlist</label>
+      <div id="generatedWordlist" class="results-list" style="max-height: 200px;"></div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-secondary" id="copyWordlistBtn" disabled>Copy</button>
+      <button class="btn btn-secondary" id="exportWordlistBtn" disabled>Export</button>
+      <button class="btn btn-secondary" id="clearWordlistBtn">Clear</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
